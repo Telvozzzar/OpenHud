@@ -22,6 +22,36 @@ See [LICENSE](./LICENSE) for full details.
 - For the Spectator overlay, click the overlay button in the side menu of the app.
 - For OBS overlay, create a Browser Source, delete all of the custom css, and use the url: http://localhost:1349/api/hud
 
+## External Match Import
+
+OpenHud now supports automatic match creation from external sources! You can import match data including team names, team logos, player names, player avatars, and Steam IDs directly from match pages.
+
+### Supported Sources
+
+- **dachcs.de** - German Counter-Strike coverage site
+
+### How to Use
+
+1. Go to the **Matches** page in the admin panel
+2. Click **Create Match** button
+3. In the dialog, you'll see an "Import Match from External URL" section
+4. Enter the match URL (e.g., `https://dachcs.de/coverage/match/7792`)
+5. Click **Import** button
+6. The application will:
+   - Fetch match data from the external source
+   - Automatically create teams with logos
+   - Automatically create players with avatars and Steam IDs
+   - Create a match with the correct format (BO1, BO3, etc.)
+7. Your match will be ready to use!
+
+### Security
+
+The external import feature includes several security measures:
+- URL validation and domain whitelisting
+- Match ID validation
+- Request size limits
+- Timeout protection
+
 Hopefully it ends up looking very nice and lets a lot of people use it in their streams!
 
 # OpenHud React Hud based on [Lexogrine react hud](https://github.com/lexogrine/cs2-react-hud)

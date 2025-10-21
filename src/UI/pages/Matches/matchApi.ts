@@ -1,5 +1,19 @@
 import { apiUrl as API_BASE_URL } from "../../api/api";
 
+interface ExternalPlayerData {
+  username: string;
+  firstName?: string;
+  lastName?: string;
+  avatar?: string;
+  steamid?: string;
+}
+
+interface ExternalMatchData {
+  team1: { name: string; logo?: string; players: ExternalPlayerData[] };
+  team2: { name: string; logo?: string; players: ExternalPlayerData[] };
+  matchType?: "bo1" | "bo2" | "bo3" | "bo5";
+}
+
 export const matchApi = {
   getAll: async (): Promise<Match[]> => {
     const response = await fetch(`${API_BASE_URL}/match`);
@@ -67,7 +81,7 @@ export const matchApi = {
     if (!response.ok) throw new Error("Failed to set current team");
   },
 
-  fetchExternalData: async (url: string): Promise<any> => {
+  fetchExternalData: async (url: string): Promise<ExternalMatchData> => {
     const response = await fetch(`${API_BASE_URL}/match/fetch-external`, {
       method: "POST",
       headers: {
