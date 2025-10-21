@@ -12,6 +12,8 @@ matchesRoutes.get("/:id", MatchesController.getMatchByIDHandler);
 /* ================== POSTs ===================== */
 matchesRoutes.post("/", MatchesController.createMatchHandler);
 matchesRoutes.post("/current", MatchesController.createMatchHandler);
+matchesRoutes.post("/fetch-external", MatchesController.fetchExternalMatchDataHandler);
+matchesRoutes.post("/create-from-external", MatchesController.createMatchFromExternalHandler);
 
 /* ================== PUTs ===================== */
 matchesRoutes.put("/:id", MatchesController.updateMatchHandler);

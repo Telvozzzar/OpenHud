@@ -66,4 +66,28 @@ export const matchApi = {
     });
     if (!response.ok) throw new Error("Failed to set current team");
   },
+
+  fetchExternalData: async (url: string): Promise<any> => {
+    const response = await fetch(`${API_BASE_URL}/match/fetch-external`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ url }),
+    });
+    if (!response.ok) throw new Error("Failed to fetch external match data");
+    return response.json();
+  },
+
+  createFromExternal: async (url: string): Promise<Match> => {
+    const response = await fetch(`${API_BASE_URL}/match/create-from-external`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ url }),
+    });
+    if (!response.ok) throw new Error("Failed to create match from external URL");
+    return response.json();
+  },
 };

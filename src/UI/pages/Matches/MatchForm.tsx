@@ -4,6 +4,7 @@ import { VetoRow } from "./VetoRow";
 import { ButtonContained, Container, Dialog } from "../../components";
 import { useMatches } from "./useMatches";
 import { useTeams } from "../../hooks";
+import { matchApi } from "./matchApi";
 
 interface MatchFormProps {
   open: boolean;
@@ -31,6 +32,8 @@ export const MatchForm = ({ open, setOpen }: MatchFormProps) => {
   const [rightTeamWins, setRightTeamWins] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState(""); // Added for error message
+  const [externalUrl, setExternalUrl] = useState(""); // Added for external URL
+  const [isFetchingExternal, setIsFetchingExternal] = useState(false);
   const [vetos, setVetos] = useState<Veto[]>(
     Array(9)
       .fill(null)
@@ -127,6 +130,7 @@ export const MatchForm = ({ open, setOpen }: MatchFormProps) => {
     setLeftTeamWins(0);
     setRightTeamWins(0);
     setErrorMessage("");
+    setExternalUrl("");
     const newVetos: Veto[] = vetos.map(() => ({
       type: "pick",
       teamId: "",
@@ -136,6 +140,37 @@ export const MatchForm = ({ open, setOpen }: MatchFormProps) => {
       mapEnd: false,
     }));
     setVetos(newVetos);
+  };
+
+  const handleFetchExternal = async () => {
+    if (!externalUrl.trim()) {
+      setErrorMessage("Please enter a valid URL");
+      return;
+    }
+
+    setIsFetchingExternal(true);
+    setErrorMessage("");
+
+    try {
+      // Create match from external URL - this will create teams and players automatically
+      await matchApi.createFromExternal(externalUrl);
+      
+      setErrorMessage("");
+      setOpen(false);
+      handleReset();
+      
+      // Reload matches to show the new one
+      window.location.reload();
+    } catch (error) {
+      console.error("Error fetching external match data:", error);
+      setErrorMessage(
+        error instanceof Error 
+          ? error.message 
+          : "Failed to fetch match data from URL. Please check the URL and try again."
+      );
+    } finally {
+      setIsFetchingExternal(false);
+    }
   };
 
   const vetoSource = selectedMatch?.vetos || vetos;
@@ -151,6 +186,49 @@ export const MatchForm = ({ open, setOpen }: MatchFormProps) => {
       </div>
       <Container>
         <div className="flex flex-1 flex-col overflow-y-scroll p-6">
+          {/* External URL Import Section */}
+          {!isEditing && (
+            <div className="mb-6 rounded-lg border border-border bg-background-secondary p-4">
+              <h4 className="mb-3 font-semibold text-text">
+                Import Match from External URL
+              </h4>
+              <p className="mb-2 text-sm text-gray-400">
+                Enter a match URL (e.g., from dachcs.de) to automatically fetch
+                team and player data
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="https://dachcs.de/coverage/match/7792"
+                  value={externalUrl}
+                  onChange={(e) => setExternalUrl(e.target.value)}
+                  className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
+                  disabled={isFetchingExternal}
+                />
+                <ButtonContained
+                  onClick={handleFetchExternal}
+                  disabled={isFetchingExternal}
+                >
+                  {isFetchingExternal ? "Fetching..." : "Import"}
+                </ButtonContained>
+              </div>
+            </div>
+          )}
+
+          {/* Divider */}
+          {!isEditing && (
+            <div className="relative mb-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="bg-background-primary px-2 text-gray-400">
+                  Or create manually
+                </span>
+              </div>
+            </div>
+          )}
+
           <div className="my-2 flex items-center justify-center gap-4">
             <div className="bg-background-primary">
               <select

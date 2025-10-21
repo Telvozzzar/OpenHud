@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import * as MatchServices from "./matches.service.js";
+import * as ExternalFetcher from "./external-fetcher.service.js";
 
 export const getMapsHandler = (_req: Request, res: Response) => {
   const defaultMaps = [
@@ -144,4 +145,57 @@ export const removeMatchHandler = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * Controller for fetching external match data.
+ * @returns Parsed external match data
+ */
+export const fetchExternalMatchDataHandler = async (req: Request, res: Response) => {
+  try {
+    const { url } = req.body;
+    
+    if (!url || typeof url !== "string") {
+      res.status(400).json({ error: "URL is required" });
+      return;
+    }
+
+    const matchData = await ExternalFetcher.fetchExternalMatchData(url);
+    res.status(200).json(matchData);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: "Unknown error" });
+    }
+  }
+};
+
+/**
+ * Controller for creating a match from external URL.
+ * Fetches data, creates teams/players, and returns the match
+ * @returns The created match
+ */
+export const createMatchFromExternalHandler = async (req: Request, res: Response) => {
+  try {
+    const { url } = req.body;
+    
+    if (!url || typeof url !== "string") {
+      res.status(400).json({ error: "URL is required" });
+      return;
+    }
+
+    // Fetch external data
+    const externalData = await ExternalFetcher.fetchExternalMatchData(url);
+    
+    // Create match with teams and players
+    const match = await MatchServices.createMatchFromExternalData(externalData);
+    
+    res.status(201).json(match);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: "Unknown error" });
+    }
+  }
+};
 
