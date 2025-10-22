@@ -33,7 +33,11 @@ export const importFaceitMatchHandler = async (req: Request, res: Response): Pro
       if (existingTeam) {
         createdTeams.push(existingTeam);
       } else {
-        const teamId = await TeamService.createTeam(teamData as any);
+        const teamId = await TeamService.createTeam({
+          ...teamData,
+          _id: "",
+          extra: {},
+        } as Team);
         const createdTeam = await TeamService.getTeamByID(teamId);
         createdTeams.push(createdTeam);
       }
@@ -67,9 +71,16 @@ export const importFaceitMatchHandler = async (req: Request, res: Response): Pro
         );
         
         const playerId = await PlayerService.createPlayer({
-          ...playerData,
+          _id: "",
+          firstName: playerData.firstName,
+          lastName: playerData.lastName,
+          username: playerData.username,
+          avatar: playerData.avatar,
+          country: playerData.country,
+          steamid: playerData.steamid,
           team: playerTeam?._id || "",
-        } as any);
+          extra: {},
+        } as Player);
         const createdPlayer = await PlayerService.getPlayerByID(playerId);
         createdPlayers.push(createdPlayer);
       }

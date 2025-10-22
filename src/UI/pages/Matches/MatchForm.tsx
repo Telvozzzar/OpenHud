@@ -79,7 +79,7 @@ export const MatchForm = ({ open, setOpen }: MatchFormProps) => {
     return isValid;
   };
 
-  const handleVetoChange = (index: number, key: keyof Veto, value: any) => {
+  const handleVetoChange = (index: number, key: keyof Veto, value: string | boolean) => {
     const updatedVetos = [...vetos];
     updatedVetos[index] = { ...updatedVetos[index], [key]: value };
     setVetos(updatedVetos);
