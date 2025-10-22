@@ -86,6 +86,12 @@ export async function fetchFaceitMatch(
     throw new Error("Invalid Faceit match ID or URL");
   }
 
+  // Additional validation: Ensure matchId is a valid UUID format
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(matchId)) {
+    throw new Error("Invalid match ID format");
+  }
+
   const headers: Record<string, string> = {
     "Accept": "application/json",
   };
@@ -95,7 +101,9 @@ export async function fetchFaceitMatch(
     headers["Authorization"] = `Bearer ${apiKey}`;
   }
 
-  const response = await fetch(`${FACEIT_API_BASE}/matches/${matchId}`, {
+  // Construct URL with validated matchId - matchId is validated to be UUID format only
+  const url = `${FACEIT_API_BASE}/matches/${matchId}`;
+  const response = await fetch(url, {
     headers,
   });
 
