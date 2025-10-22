@@ -4,6 +4,7 @@ import { VetoRow } from "./VetoRow";
 import { ButtonContained, Container, Dialog } from "../../components";
 import { useMatches } from "./useMatches";
 import { useTeams } from "../../hooks";
+import { FaceitImportDialog } from "./FaceitImportDialog";
 
 interface MatchFormProps {
   open: boolean;
@@ -31,6 +32,7 @@ export const MatchForm = ({ open, setOpen }: MatchFormProps) => {
   const [rightTeamWins, setRightTeamWins] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState(""); // Added for error message
+  const [faceitImportOpen, setFaceitImportOpen] = useState(false);
   const [vetos, setVetos] = useState<Veto[]>(
     Array(9)
       .fill(null)
@@ -138,20 +140,60 @@ export const MatchForm = ({ open, setOpen }: MatchFormProps) => {
     setVetos(newVetos);
   };
 
+  const handleFaceitImportSuccess = (data: {
+    leftTeamId: string;
+    rightTeamId: string;
+    matchType: "bo1" | "bo3" | "bo5";
+    maps: string[];
+  }) => {
+    // Set the teams from imported data
+    setLeftTeamId(data.leftTeamId);
+    setRightTeamId(data.rightTeamId);
+    setMatchType(data.matchType);
+    
+    // Optionally pre-populate maps in vetos if available
+    if (data.maps && data.maps.length > 0) {
+      const newVetos = [...vetos];
+      data.maps.forEach((mapName, index) => {
+        if (newVetos[index]) {
+          newVetos[index] = {
+            ...newVetos[index],
+            mapName,
+            type: "pick",
+          };
+        }
+      });
+      setVetos(newVetos);
+    }
+  };
+
   const vetoSource = selectedMatch?.vetos || vetos;
 
   return (
-    <Dialog onClose={handleCancel} open={open}>
-      <div className="flex flex-1 border-b border-border">
-        <h3 className="px-6 py-4 font-semibold">
-          {isEditing
-            ? `Updating: ${leftTeam?.name} vs ${rightTeam?.name}`
-            : "Create Match"}
-        </h3>
-      </div>
-      <Container>
-        <div className="flex flex-1 flex-col overflow-y-scroll p-6">
-          <div className="my-2 flex items-center justify-center gap-4">
+    <>
+      <FaceitImportDialog
+        open={faceitImportOpen}
+        setOpen={setFaceitImportOpen}
+        onImportSuccess={handleFaceitImportSuccess}
+      />
+      <Dialog onClose={handleCancel} open={open}>
+        <div className="flex flex-1 border-b border-border">
+          <h3 className="px-6 py-4 font-semibold">
+            {isEditing
+              ? `Updating: ${leftTeam?.name} vs ${rightTeam?.name}`
+              : "Create Match"}
+          </h3>
+        </div>
+        <Container>
+          <div className="flex flex-1 flex-col overflow-y-scroll p-6">
+            {!isEditing && (
+              <div className="mb-4 flex items-center justify-center">
+                <ButtonContained onClick={() => setFaceitImportOpen(true)}>
+                  Import from Faceit
+                </ButtonContained>
+              </div>
+            )}
+            <div className="my-2 flex items-center justify-center gap-4">
             <div className="bg-background-primary">
               <select
                 value={leftTeamId || ""}
@@ -287,6 +329,7 @@ export const MatchForm = ({ open, setOpen }: MatchFormProps) => {
         </div>
       </div>
     </Dialog>
+    </>
   );
 };
 
